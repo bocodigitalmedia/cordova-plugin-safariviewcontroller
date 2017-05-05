@@ -1,7 +1,6 @@
-cordova.define("cordova-plugin-safariviewcontroller.SafariViewController", function(require, exports, module) {
-  var exec = require("cordova/exec");
-  var channel = require("cordova/channel");
-  var channels = {
+var exec = require("cordova/exec");
+var channel = require("cordova/channel");
+var channels = {
     exit: channel.create("exit"),
     loadstart: channel.create("loadstart"),
     loadError: channel.create("loaderror")
@@ -60,5 +59,3 @@ cordova.define("cordova-plugin-safariviewcontroller.SafariViewController", funct
     exec(onSuccess, onError, "SafariViewController", "mayLaunchUrl", [url]);
   }
 };
-
-});

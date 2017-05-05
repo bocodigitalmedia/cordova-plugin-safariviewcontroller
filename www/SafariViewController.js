@@ -1,7 +1,21 @@
-var exec = require("cordova/exec");
-module.exports = {
-  isAvailable: function (callback) {
-    var errorHandler = function errorHandler(error) {
+cordova.define("cordova-plugin-safariviewcontroller.SafariViewController", function(require, exports, module) {
+  var exec = require("cordova/exec");
+  var channel = require("cordova/channel");
+  var channels = {
+    exit: channel.create("exit"),
+    loadstart: channel.create("loadstart"),
+    loadError: channel.create("loaderror")
+  };
+  
+  function eventHandler(event) {
+    if (event && (event.type in channels)) {
+      channels[event.type].fire(event);
+    }
+  }
+  
+  module.exports = {
+    isAvailable: function (callback) {
+      var errorHandler = function errorHandler(error) {
       // An error has occurred while trying to access the
       // SafariViewController native implementation, most likely because
       // we are on an unsupported platform.
@@ -14,10 +28,27 @@ module.exports = {
     if (!options.hasOwnProperty('animated')) {
       options.animated = true;
     }
-    exec(onSuccess, onError, "SafariViewController", "show", [options]);
+    exec(function(event) {
+      if (onSuccess) {
+        onSuccess.apply(null, arguments);
+        onSuccess = null;
+      }
+      eventHandler(event);
+    }, onError, "SafariViewController", "show", [options]);
+    
   },
   hide: function (onSuccess, onError) {
     exec(onSuccess, onError, "SafariViewController", "hide", []);
+  },
+  addEventListener: function (eventname,f) {
+    if (eventname in channels) {
+      channels[eventname].subscribe(f);
+    }
+  },
+  removeEventListener: function(eventname, f) {
+    if (eventname in channels) {
+      channels[eventname].unsubscribe(f);
+    }
   },
   connectToService: function (onSuccess, onError) {
     exec(onSuccess, onError, "SafariViewController", "connectToService", []);
@@ -29,3 +60,5 @@ module.exports = {
     exec(onSuccess, onError, "SafariViewController", "mayLaunchUrl", [url]);
   }
 };
+
+});
